@@ -1,0 +1,183 @@
+<html>
+<head>
+	<title>IO Chat</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<style>
+		body{
+				margin-top: 30px;
+				margin-left: 30px;
+				margin-right: 30px;
+		}
+		
+		#messageArea{
+			display: none;
+		}
+		
+	</style>
+</head>
+<body>
+	<div class="container" style="max-width: 300px;">
+		<div id="userFormArea" class="row">
+			<div class="col-md-12">
+				<form id="userForm">
+					<div class="form-group">
+						<label>Customer Login</label>
+						<input placeholder="Enter Username" class="form-control" id="username" />
+						<br />
+						<input type="submit" class="btn btn-primary" value="Login" />			
+					</div>
+				</form>	
+				<br><br>
+				<form id="userForm1">
+					<div class="form-group">
+						<label>Business Manager Login</label>
+						<input placeholder="Enter Username" class="form-control" id="username1" />
+						<br />
+						<input type="submit" class="btn btn-primary" value="Login" />			
+					</div>
+				</form>	
+			</div>
+			
+		</div>
+	</div>
+
+		<div id="messageArea" class="row">
+			<div class="col-md-4">
+				<div class="form-control" style="height: 220px;">
+					<h3 style="color: green">Online</h3>
+					<ul class="list-group" id="users"></ul>
+					<br /><br />
+				</div>
+				
+			</div>
+			<div class="col-md-8">
+				<div class="form-control" style="height: 220px; overflow-y: scroll;">
+				<div class="chat" id="chat"></div></div><br />
+				<form id="clearForm">
+				<button class="btn btn-danger" style="border: none;" type="submit" id='clear' value="clear">Delete</button>
+				</form>
+				<form id="smileyForm">
+				<button style="border: none;" type="submit" id='smiley' value="&#128522;">&#128522;</button>
+				</form>	
+				<form id="grinForm">
+				<button style="border: none;" type="submit" id='grin' value="&#128512;">&#128512;</button>
+				</form>
+				<form id="laughForm">
+				<button style="border: none;" type="submit" id='laugh' value="&#128514;">&#128514;</button>
+				</form>
+				<form id="sadForm">
+				<button style="border: none;" type="submit" id='sad' value="&#128577;">&#128577;</button>
+				</form>
+				<form id="angryForm">
+				<button style="border: none;" type="submit" id='angry' value="&#128545;">&#128545;</button>
+				</form>
+				<form id="messageForm">
+					<div class="form-group">
+						<textarea placeholder="Enter message..." class="form-control" id="message"></textarea>
+						<br />
+						<input type="submit" class="btn btn-primary" value="Send"  />			
+					</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		$(function(){
+			var socket=io.connect();
+			var $messageForm = $('#messageForm');
+			var $message = $('#message');
+			var $chat = $('#chat');
+			var $messageArea = $('#messageArea');
+			var $userFormArea = $('#userFormArea');
+			var $userForm = $('#userForm');
+			var $users = $('#users');
+			var $username = $('#username');
+			var $smiley = $('#smiley')
+			var $smileyForm = $('#smileyForm');
+			var $grin = $('#grin');
+			var $grinForm = $('#grinForm');
+			var $laugh = $('#laugh');
+			var $laughForm = $('#laughForm');
+			var $sad = $('#sad');
+			var $sadForm = $('#sadForm');
+			var $angry= $('#angry');
+			var $angryForm = $('#angryForm');
+			var $clear =$('#clear');
+			var $clearForm = $('#clearForm');
+			var $username1 =$('#username1');
+			var $userForm1 = $('#userForm1');
+			
+			$messageForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message',$message.val());
+				$message.val('');
+			});
+
+			$clearForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message',$clear.val());
+			});
+			$smileyForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message',$smiley.val());
+			});
+			$grinForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message',$grin.val());
+			});
+			$laughForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message',$laugh.val());
+			});
+			$sadForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message',$sad.val());
+			});
+			$angryForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message',$angry.val());
+			});
+
+			
+			socket.on('new message', function(data){
+				$chat.append('<div><strong>'+data.user+'</strong>: '+data.msg+'</div><br />');
+				if(data.msg=="clear"){
+					chat.textContent='';
+				}
+			});
+
+			$userForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('new user',$username.val(), function(data){
+					if(data){
+						$userFormArea.hide();
+						$messageArea.show();
+					}
+				});
+				$username.val('');
+			});
+
+			$userForm1.submit(function(e){
+				e.preventDefault();
+				socket.emit('new user',$username1.val(), function(data){
+					if(data){
+						$userFormArea.hide();
+						$messageArea.show();
+					}
+				});
+				$username1.val('');
+			});
+
+			socket.on('get users', function(data){
+				var html = '';
+				for(i=0;i<data.length;i++){
+					html+=  '<li class="list-group-item">'+data[i]+'</li>';
+				}
+				$users.html(html);
+			});
+		});
+	</script>
+</body>
+</html>
